@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { QueryValueField } from "./QueryValueField";
 
-export function QueryEdit({ rule }: { rule: any }) {
+export function QueryEdit({ rule, callback }: any) {
   // todo move this to the context perhaps so it is a global value mimicking coming from an API?
   const config: any = {
     [""]: null,
@@ -19,14 +19,21 @@ export function QueryEdit({ rule }: { rule: any }) {
       },
     },
   };
-
   const [fieldName, setFieldName] = useState(rule ? rule.fieldName : "");
+  const [operator, setOperator] = useState<any>(rule ? rule.operator : "");
+  const [ruleState, setRuleState] = useState<any>(rule);
   const [options, setOptions] = useState<any>([]);
   const [valueType, setValueType] = useState<any>(null);
   const [operatorConfig, setOperatorConfig] = useState<any>(null);
 
   const handleFieldNameChanged = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFieldName(e.target.value);
+    setRuleState(() => ({
+      id: ruleState.id,
+      fieldName: e.target.value,
+      operator: null,
+      value: null,
+    }));
 
     if (e.target.value) {
       setOptions(operatorOptions(e.target.value));
@@ -36,6 +43,12 @@ export function QueryEdit({ rule }: { rule: any }) {
     setOptions([]);
     setOperatorConfig(null);
     setValueType(null);
+    setRuleState(() => ({
+      id: ruleState.id,
+      fieldName: fieldName,
+      operator: null,
+      value: null,
+    }));
   };
 
   const handleOperatiorChanged = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -44,8 +57,14 @@ export function QueryEdit({ rule }: { rule: any }) {
       return;
     }
 
-    console.log("handleOperatiorChanged", operatorConfig[e.target.value]);
     setValueType(operatorConfig[e.target.value].value);
+    setOperator(e.target.value);
+    setRuleState(() => ({
+      id: ruleState.id,
+      fieldName: fieldName,
+      operator: e.target.value,
+      value: null,
+    }));
   };
 
   const operatorToReadable = (operator: string) =>
@@ -76,11 +95,26 @@ export function QueryEdit({ rule }: { rule: any }) {
   };
 
   const updateValue = (data: any) => {
-    console.log("updateValue", data);
+    // setRuleState(() => {
+      const result = {
+        id: ruleState.id,
+        fieldName: fieldName,
+        operator: operator,
+        value: data,
+      };
+
+      callback(result);
+
+    //   return result;
+    // });
   };
 
   return (
     <>
+      <pre style={{ backgroundColor: "black" }}>
+        QueryEdit: {JSON.stringify(ruleState, null, 2)}
+      </pre>
+
       <div className="query-group-query">
         <label>
           FieldName

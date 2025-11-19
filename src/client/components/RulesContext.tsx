@@ -2,11 +2,13 @@ import { createContext, useContext, useReducer } from "react";
 import { Rule, RulesContextType, RulesDispatchContextType } from "../model";
 import { QUERY_BUILDER } from "../constants";
 
-const RulesContext = createContext<RulesContextType>({
+const RulesContext = createContext<any>({
   combinator: "AND",
   conditions: [],
 });
-const RulesDispatchContext = createContext<RulesDispatchContextType>({});
+const RulesDispatchContext = createContext<any>({});
+
+const initialRules: Rule[] = [];
 
 export function RulesProvider({ children }: { children: React.ReactNode }) {
   const [rules, dispatch] = useReducer(rulesReducer, initialRules);
@@ -29,35 +31,34 @@ export function useRulesDispatch() {
 }
 
 // TODO TYPE
-function rulesReducer(rules: any, action: any) {
-  switch (action.type) {
+function rulesReducer(prevRules: any, { rule, type, groupToAdd }: any) {
+  console.log("REDUCER", rule, type, prevRules);
+
+  switch (type) {
     case QUERY_BUILDER.DISPATCH_ACTIONS.ADDED: {
       return [
-        ...rules,
+        ...prevRules,
         {
-          id: action.id,
-          text: action.text,
+          id: Math.random().toString(36),
+          text: rule.text,
           done: false,
         },
       ];
     }
 
     case QUERY_BUILDER.DISPATCH_ACTIONS.CHANGED: {
-      return rules.map((t: any) => {
-        if (t.id === action.task.id) {
-          return action.task;
-        }
-        return t;
-      });
+      console.log("changed");
+
+      break;
     }
 
     case QUERY_BUILDER.DISPATCH_ACTIONS.DELETED: {
-      return rules.filter((t: any) => t.id !== action.id);
+      console.log("deleted");
+
+      break;
     }
     default: {
-      throw Error("Unknown action: " + action.type);
+      throw Error("Unknown action: " + type);
     }
   }
 }
-
-const initialRules: Rule[] = [];

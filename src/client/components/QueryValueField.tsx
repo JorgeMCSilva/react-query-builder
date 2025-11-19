@@ -14,8 +14,7 @@ export function QueryValueField({
   const [currency, setCurrency] = useState("");
 
   const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
-    setValue(e.target.value);
+    // setValue(e.target.value);
 
     if (type === "textbox") {
       callback(e.target.value);
@@ -26,8 +25,7 @@ export function QueryValueField({
   };
 
   const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    console.log(e.target.value);
-    setCurrency(e.target.value);
+    // setCurrency(e.target.value);
   };
 
   return (

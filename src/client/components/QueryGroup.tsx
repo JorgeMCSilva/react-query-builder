@@ -6,66 +6,123 @@ import { QueryEdit } from "./QueryEdit";
 export function QueryGroup({
   index,
   data,
+  callback,
 }: {
   index: number;
   data: RulesContextType;
+  callback: Function;
 }) {
   const [aggregator, setAggregator] = useState(data.combinator);
-  const [rules, setRules] = useState<Array<Rule>>([]);
+  const [rules, setRules] = useState<any>({
+    combinator: "AND",
+    conditions: [],
+  });
 
   const dispatch = useRulesDispatch();
 
-  // console.log("QueryGroup", index, data);
+  console.log("init query group");
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    console.log("Aggregator changed to:", e.target.value);
+    setAggregator(e.target.value as any);
+
+    setRules((prev: any) => ({ ...prev, cominator: e.target.value }));
   };
 
   const handleAddRuleClick = () => {
-    // console.log("Add Rule clicked");
-    // append rule to the data at this level
-    // dispatch to provider so it can be updated
-    // const dispatchObject: RulesDispatchContextType = {};
-    // dispatch(dispatchObject);
-    setRules((prevRules) => {
-      const result = [...prevRules];
+    setRules((prevRules: any) => {
+      const result = {
+        combinator: prevRules.combinator,
+        conditions: [...prevRules.conditions],
+      };
       // ensure new condition queries are at top and grouped for ease of use
       // groups always go at end
-      result.unshift({
+      const newRule = {
         id: Math.random().toString(36),
         fieldName: "",
         operator: "",
         value: "",
-      });
+      } as any;
+
+      result.conditions.unshift(newRule);
+
+      // propagate above
+      callback(newRule);
 
       return result;
     });
   };
 
   const handleAddGroupClick = () => {
-    // console.log("Add Group clicked");
+    // setRules((prevRules: any) => {
+    //   const result = {
+    //     combinator: prevRules.combinator,
+    //     conditions: [
+    //       ...prevRules.conditions,
+    //       {
+    //         container: "AND",
+    //         id: Math.random().toString(36),
+    //         fieldName: "",
+    //         operator: "",
+    //         value: "",
+    //       },
+    //     ],
+    //   };
+    //   return result;
+    // });
 
-    setRules((prevRules) => {
-      return [
-        ...prevRules,
-        {
-          container: "AND",
-          id: Math.random().toString(36),
-          fieldName: "",
-          operator: "",
-          value: "",
-        },
-      ];
+    callback({
+      container: aggregator,
+      id: Math.random().toString(36),
+      fieldName: "",
+      operator: "",
+      value: "",
     });
   };
 
-  const ruleElements = rules.map((rule) => {
+  const fieldCallback = (data: any) => {
+    console.log("fieldCallback", data);
+    if (data.hasOwnProperty("container")) {
+      // this is a group being added
+      return;
+    }
+
+    // simple field being added to group
+    setRules((prevRules: any) => {
+      let existingIndex = prevRules.conditions.findIndex((x) => {
+        return x.id === data.id;
+      });
+      let result;
+
+      if (existingIndex > -1) {
+        prevRules.conditions[existingIndex] = data;
+        result = {
+          combinator: prevRules.combinator,
+          conditions: [...prevRules.conditions],
+        };
+
+        return result;
+      }
+
+      result = {
+        combinator: prevRules.combinator,
+        conditions: [...prevRules.conditions, data],
+      };
+      return result;
+    });
+  };
+
+  const groupCallback = (data: any) => {
+    console.log("groupCallback", data);
+  };
+
+  const ruleElements = rules?.conditions.map((rule) => {
     // containers exist in groups
     if (rule.container) {
       return (
         <QueryGroup
           key={rule.id}
           index={index + 1}
+          callback={groupCallback}
           data={{
             combinator: "AND",
             conditions: [],
@@ -74,27 +131,26 @@ export function QueryGroup({
       );
     }
 
-    return <QueryEdit rule={rule} key={rule.id} />;
+    return <QueryEdit rule={rule} key={rule.id} callback={fieldCallback} />;
   });
 
   return (
     <>
+      <pre>{JSON.stringify(rules, null, 2)}</pre>
+
       <div className={"query-group-container " + `level-${index}`}>
         <div className="query-group-actions">
-          <div className="select">
-            <select
-              title="Condition Aggregator"
-              aria-label="Condition Aggregator"
-              name="condition-aggregator"
-              className="query-select-combinator"
-              defaultValue={aggregator}
-              onChange={handleChange}
-            >
-              <option value="AND">AND</option>
-              <option value="OR">OR</option>
-            </select>
-            <span className="focus"></span>
-          </div>
+          <select
+            title="Condition Aggregator"
+            aria-label="Condition Aggregator"
+            name="condition-aggregator"
+            className="query-select-combinator"
+            defaultValue={aggregator}
+            onChange={handleChange}
+          >
+            <option value="AND">AND</option>
+            <option value="OR">OR</option>
+          </select>
           <button
             onClick={handleAddRuleClick}
             className="button-add"
