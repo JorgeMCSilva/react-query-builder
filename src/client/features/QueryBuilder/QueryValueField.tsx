@@ -1,21 +1,21 @@
 import { useState } from "react";
+import { RuleErrors } from "../../model";
 
 export function QueryValueField({
   callback,
   type,
+  errors,
 }: {
-  callback: any;
+  callback: Function;
   type: any;
+  errors?: RuleErrors;
 }) {
   // this throws an error when compiling???
   // return <>{type === ValueFieldTypes.TEXTBOX}</>;
 
-  const [_value, setValue] = useState("");
   const [currency, setCurrency] = useState("");
 
   const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // setValue(e.target.value);
-
     if (type === "textbox") {
       callback(e.target.value);
       return;
@@ -25,7 +25,7 @@ export function QueryValueField({
   };
 
   const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    // setCurrency(e.target.value);
+    setCurrency(e.target.value);
   };
 
   return (
@@ -39,6 +39,9 @@ export function QueryValueField({
             type="text"
             onChange={handleValueChange}
           ></input>
+          {Array.isArray(errors) &&
+            errors.length > 0 &&
+            errors[0].length > 0 && <span className="error">{errors[0]}</span>}
         </label>
       )}
 
@@ -51,10 +54,19 @@ export function QueryValueField({
               title="Currency"
               onChange={handleCurrencyChange}
             >
-              <option value="">--Select Currency--</option>
-              <option value="eur">EUR</option>
-              <option value="usd">USD</option>
+              <option data-testid="cur-opt" value="">
+                --Select Currency--
+              </option>
+              <option data-testid="cur-opt" value="eur">
+                EUR
+              </option>
+              <option data-testid="cur-opt" value="usd">
+                USD
+              </option>
             </select>
+            {Array.isArray(errors) && errors.length > 0 && (
+              <span className="error">{errors[0]}</span>
+            )}
           </label>
           <label>
             Value
@@ -64,6 +76,9 @@ export function QueryValueField({
               type="text"
               onChange={handleValueChange}
             ></input>
+            {Array.isArray(errors) && errors.length > 0 && (
+              <span className="error">{errors[1]}</span>
+            )}
           </label>
         </>
       )}

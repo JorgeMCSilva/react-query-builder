@@ -1,8 +1,9 @@
 import { createContext, useContext, useReducer } from "react";
-import { Rule, RulesContextType, RulesDispatchContextType } from "../model";
-import { QUERY_BUILDER } from "../constants";
+import { Rule } from "../../model";
+import { QUERY_BUILDER } from "../../constants";
 
 const RulesContext = createContext<any>({
+  id: "test",
   combinator: "AND",
   conditions: [],
 });
@@ -32,7 +33,7 @@ export function useRulesDispatch() {
 
 // TODO TYPE
 function rulesReducer(prevRules: any, { rule, type, groupToAdd }: any) {
-  console.log("REDUCER", rule, type, prevRules);
+  // console.log("REDUCER", rule, type, prevRules);
 
   switch (type) {
     case QUERY_BUILDER.DISPATCH_ACTIONS.ADDED: {

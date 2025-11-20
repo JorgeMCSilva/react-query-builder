@@ -136,28 +136,29 @@ select option {
   margin-left: 50px;
 }
 
-/* 
-.level-0 {
-  background-color: red;
-
-  .query-group-container,
-  .query-group-query {
-    background-color: red;
-  }
+pre {
+  background-color: black;
+  color: grey;
 }
 
-.level-1 {
-  background-color: blue;
-  .query-group-container,
-  .query-group-query {
-    background-color: blue;
-  }
+.error {
+  border: 3px solid darkred;
+  background: salmon;
+  color: black;
+
+  padding: 5px;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
-.level-2 {
-  background-color: green;
-  .query-group-container,
-  .query-group-query {
-    background-color: green;
-  }
-} */
+[aria-invalid="true"] {
+  outline: 2px solid red;
+}
+
+/* font not installed */
+.error::before {
+  font-family: FontAwesome;
+  content: "\f057";
+  font-size: 24px;
+  color: #d8000c;
+}

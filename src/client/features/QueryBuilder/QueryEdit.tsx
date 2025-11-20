@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { QueryValueField } from "./QueryValueField";
+import { Operator, Rule } from "../../model";
 
-export function QueryEdit({ rule, callback }: any) {
+export function QueryEdit({
+  rule,
+  callback,
+}: {
+  rule: Rule;
+  callback: Function;
+}) {
   // todo move this to the context perhaps so it is a global value mimicking coming from an API?
   const config: any = {
     [""]: null,
@@ -20,8 +27,10 @@ export function QueryEdit({ rule, callback }: any) {
     },
   };
   const [fieldName, setFieldName] = useState(rule ? rule.fieldName : "");
-  const [operator, setOperator] = useState<any>(rule ? rule.operator : "");
-  const [ruleState, setRuleState] = useState<any>(rule);
+  const [operator, setOperator] = useState<string | undefined>(
+    rule ? rule.operator : ""
+  );
+  const [ruleState, setRuleState] = useState<Rule>(rule);
   const [options, setOptions] = useState<any>([]);
   const [valueType, setValueType] = useState<any>(null);
   const [operatorConfig, setOperatorConfig] = useState<any>(null);
@@ -31,8 +40,6 @@ export function QueryEdit({ rule, callback }: any) {
     setRuleState(() => ({
       id: ruleState.id,
       fieldName: e.target.value,
-      operator: null,
-      value: null,
     }));
 
     if (e.target.value) {
@@ -46,8 +53,6 @@ export function QueryEdit({ rule, callback }: any) {
     setRuleState(() => ({
       id: ruleState.id,
       fieldName: fieldName,
-      operator: null,
-      value: null,
     }));
   };
 
@@ -62,8 +67,7 @@ export function QueryEdit({ rule, callback }: any) {
     setRuleState(() => ({
       id: ruleState.id,
       fieldName: fieldName,
-      operator: e.target.value,
-      value: null,
+      operator: e.target.value as Operator,
     }));
   };
 
@@ -94,30 +98,27 @@ export function QueryEdit({ rule, callback }: any) {
     ));
   };
 
-  const updateValue = (data: any) => {
-    // setRuleState(() => {
-      const result = {
-        id: ruleState.id,
-        fieldName: fieldName,
-        operator: operator,
-        value: data,
-      };
+  const updateValue = (data: string | { amount: string; currency: string }) => {
+    const result = {
+      id: ruleState.id,
+      fieldName: fieldName,
+      operator: operator,
+      value: data,
+    };
 
-      callback(result);
-
-    //   return result;
-    // });
+    callback(result);
   };
 
   return (
     <>
-      <pre style={{ backgroundColor: "black" }}>
-        QueryEdit: {JSON.stringify(ruleState, null, 2)}
-      </pre>
+      {/* <pre>QueryEdit: {JSON.stringify(ruleState, null, 2)}</pre> */}
 
       <div className="query-group-query">
         <label>
           FieldName
+          {/* complaining about aria attribute being wrong? skipping aria on other elements*/}
+          {/* aria-invalid={rule.errors?.fieldName ? "true", "false"} */}
+          {/* aria-errormessage */}
           <select
             title="Field Name"
             name="fieldName"
@@ -129,6 +130,9 @@ export function QueryEdit({ rule, callback }: any) {
             <option value="name">Name</option>
             <option value="transaction_state,">Transaction State</option>
           </select>
+          {rule.errors?.fieldName && (
+            <span className="error">{rule.errors.fieldName}</span>
+          )}
         </label>
 
         {/*  show when fieldname is available */}
@@ -145,12 +149,19 @@ export function QueryEdit({ rule, callback }: any) {
               <option value="">--Select Operator--</option>
               {options}
             </select>
+            {rule.errors?.operator && (
+              <span className="error">{rule.errors.operator}</span>
+            )}
           </label>
         )}
 
         {/*  show when value is available */}
         {valueType && (
-          <QueryValueField callback={updateValue} type={valueType} />
+          <QueryValueField
+            callback={updateValue}
+            type={valueType}
+            errors={rule.errors}
+          />
         )}
       </div>
     </>
